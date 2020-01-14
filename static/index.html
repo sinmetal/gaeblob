@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input type="file" id="input"><button onclick="upload()">upload</button>
+<button onclick="getFile()">test</button>
+<button onclick="getDownloadURL()">Download</button>
+</body>
+</html>
+
+<script>
+    function getFile() {
+        fetch("https://storage.googleapis.com/sinmetal-lab-blob/hoge.txt").then(function(response) {
+            return response.json()
+        }).then(function(json) {
+            console.log(json);
+        });
+    }
+
+    function getDownloadURL() {
+        fetch("/v1/download?object=hoge.txt").then(function(response) {
+            return response.json()
+        }).then(function(json) {
+            fetch(json["url"]).then(function(response) {
+                return response.json()
+            }).then(function(json) {
+                console.log(json);
+            });
+        });
+    }
+
+    function upload() {
+        console.log("upload start");
+
+        fetch("/v1/upload?contentType=text/csv").then(function(response) {
+            return response.json()
+        }).then(function(json) {
+            console.log(json["url"]);
+
+            const headers = new Headers();
+            headers.set("Content-Type", "text/csv");
+            const fileField = document.querySelector('input[type="file"]');
+
+            fetch(json["url"], {
+                method: "PUT",
+                headers: headers,
+                body: fileField.files[0],
+                mode: "cors"
+            })
+                .then((response) => response)
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        });
+
+
+    }
+</script>
